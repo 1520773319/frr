@@ -2323,6 +2323,42 @@ static const struct route_map_rule_cmd route_set_aspath_prepend_cmd = {
 	route_set_aspath_prepend_free,
 };
 
+/* Clear the as-path */
+static enum route_map_cmd_result_t
+route_set_aspath_clear(void *rule, const struct prefix *prefix, void *object)
+{
+	struct aspath *new;
+	struct bgp_path_info *path;
+
+	path = object;
+	new = XCALLOC(MTYPE_AS_PATH, sizeof(struct aspath));
+	if(!new)
+		return RMAP_ERROR;
+
+	new->refcnt = 0;
+	new->segments = NULL;
+	new->json = NULL;
+	new->str_len = 0;
+	new->str = XMALLOC(MTYPE_AS_STR, 1);
+	new->str[0] = '\0';
+
+	path->attr->aspath = new;
+	return RMAP_OKAY;
+}
+
+static void route_aspath_clear_free(void *rule)
+{
+	XFREE(MTYPE_ROUTE_MAP_COMPILED, rule);
+}
+
+/* Set as-path clear rule structure. */
+static const struct route_map_rule_cmd route_set_aspath_clear_cmd = {
+	"as-path clear",
+	route_set_aspath_clear,
+	NULL,
+	route_aspath_clear_free,
+};
+
 static void *route_aspath_exclude_compile(const char *arg)
 {
 	struct aspath_exclude *ase;
@@ -6100,6 +6136,25 @@ DEFUN_YANG (no_set_label_index,
 	return nb_cli_apply_changes(vty, NULL);
 }
 
+DEFUN_YANG (set_aspath_clear_asn,
+	    set_aspath_clear_asn_cmd,
+	    "set as-path clear",
+	    SET_STR
+	    "Transform BGP AS_PATH attribute\n"
+	    "Clear the as-path\n")
+{
+	const char *xpath =
+		"./set-action[action='frr-bgp-route-map:as-path-clear']";
+	char xpath_value[XPATH_MAXLEN];
+
+	nb_cli_enqueue_change(vty, xpath, NB_OP_CREATE, NULL);
+	snprintf(xpath_value, sizeof(xpath_value),
+		 "%s/rmap-set-action/frr-bgp-route-map:clear-as-path", xpath);
+	nb_cli_enqueue_change(vty, xpath_value, NB_OP_MODIFY, NULL);
+
+	return nb_cli_apply_changes(vty, NULL);
+}
+
 DEFUN_YANG (set_aspath_prepend_asn,
 	    set_aspath_prepend_asn_cmd,
 	    "set as-path prepend ASNUM...",
@@ -6264,6 +6319,22 @@ DEFPY_YANG(
 	nb_cli_enqueue_change(vty, xpath, NB_OP_DESTROY, NULL);
 	return nb_cli_apply_changes(vty, NULL);
 }
+
+DEFUN_YANG (no_set_aspath_clear,
+	    no_set_aspath_clear_cmd,
+	    "no set as-path clear",
+	    NO_STR
+	    SET_STR
+	    "Transform BGP AS_PATH attribute\n"
+	    "Clear the as-path\n")
+{
+	const char *xpath =
+		"./set-action[action='frr-bgp-route-map:as-path-clear']";
+
+	nb_cli_enqueue_change(vty, xpath, NB_OP_DESTROY, NULL);
+	return nb_cli_apply_changes(vty, NULL);
+}
+
 
 DEFUN_YANG (no_set_aspath_prepend,
 	    no_set_aspath_prepend_cmd,
@@ -7875,6 +7946,7 @@ void bgp_route_map_init(void)
 	route_map_install_set(&route_set_metric_cmd);
 	route_map_install_set(&route_set_distance_cmd);
 	route_map_install_set(&route_set_aspath_prepend_cmd);
+	route_map_install_set(&route_set_aspath_clear_cmd);
 	route_map_install_set(&route_set_aspath_exclude_cmd);
 	route_map_install_set(&route_set_aspath_replace_cmd);
 	route_map_install_set(&route_set_origin_cmd);
@@ -7952,6 +8024,7 @@ void bgp_route_map_init(void)
 	install_element(RMAP_NODE, &set_label_index_cmd);
 	install_element(RMAP_NODE, &no_set_weight_cmd);
 	install_element(RMAP_NODE, &no_set_label_index_cmd);
+	install_element(RMAP_NODE, &set_aspath_clear_asn_cmd);
 	install_element(RMAP_NODE, &set_aspath_prepend_asn_cmd);
 	install_element(RMAP_NODE, &set_aspath_prepend_lastas_cmd);
 	install_element(RMAP_NODE, &set_aspath_exclude_cmd);
@@ -7959,6 +8032,7 @@ void bgp_route_map_init(void)
 	install_element(RMAP_NODE, &set_aspath_exclude_access_list_cmd);
 	install_element(RMAP_NODE, &set_aspath_replace_asn_cmd);
 	install_element(RMAP_NODE, &set_aspath_replace_access_list_cmd);
+	install_element(RMAP_NODE, &no_set_aspath_clear_cmd);
 	install_element(RMAP_NODE, &no_set_aspath_prepend_cmd);
 	install_element(RMAP_NODE, &no_set_aspath_exclude_cmd);
 	install_element(RMAP_NODE, &no_set_aspath_exclude_all_cmd);

@@ -1305,6 +1305,8 @@ void route_map_action_show(struct vty *vty, const struct lyd_node *dnode,
 			yang_dnode_get_string(
 				dnode,
 				"./rmap-set-action/frr-bgp-route-map:replace-as-path"));
+	} else if (IS_SET_AS_CLEAR(action)) {
+		vty_out(vty, " set as-path clear\n");
 	} else if (IS_SET_AS_PREPEND(action)) {
 		if (yang_dnode_exists(
 			    dnode,

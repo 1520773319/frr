@@ -369,6 +369,8 @@ DECLARE_QOBJ_TYPE(route_map);
 
 #define IS_SET_AGGREGATOR(A)                                                   \
 	(strmatch(A, "frr-bgp-route-map:aggregator"))
+#define IS_SET_AS_CLEAR(A)                                                     \
+	(strmatch(A, "frr-bgp-route-map:as-path-clear"))
 #define IS_SET_AS_PREPEND(A)                                                   \
 	(strmatch(A, "frr-bgp-route-map:as-path-prepend"))
 #define IS_SET_AS_EXCLUDE(A)                                                   \

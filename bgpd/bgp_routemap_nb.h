@@ -112,6 +112,8 @@ int lib_route_map_entry_set_action_rmap_set_action_aigp_metric_modify(
 	struct nb_cb_modify_args *args);
 int lib_route_map_entry_set_action_rmap_set_action_aigp_metric_destroy(
 	struct nb_cb_destroy_args *args);
+int lib_route_map_entry_set_action_rmap_set_action_clear_as_path_create(struct nb_cb_create_args *args);
+int lib_route_map_entry_set_action_rmap_set_action_clear_as_path_destroy(struct nb_cb_destroy_args *args);
 int lib_route_map_entry_set_action_rmap_set_action_prepend_as_path_modify(struct nb_cb_modify_args *args);
 int lib_route_map_entry_set_action_rmap_set_action_prepend_as_path_destroy(struct nb_cb_destroy_args *args);
 int lib_route_map_entry_set_action_rmap_set_action_last_as_modify(struct nb_cb_modify_args *args);
